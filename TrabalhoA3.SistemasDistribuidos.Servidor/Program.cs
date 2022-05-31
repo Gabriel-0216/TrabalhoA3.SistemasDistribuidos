@@ -174,7 +174,7 @@ public class Produto
     public string FinalizarLeilao()
     {
         Finalizado = true;
-        return $"LEILÃO FINALIZADO, DADOS: Id: {Id}, Nome do produto: {NomeProduto}, Email do Comprador: {EmailVendedor} Melhor lance: {MelhorLance}, já foi finalizado?: {Finalizado}";
+        return $"LEILÃO FINALIZADO, DADOS: Id: {Id}, Nome do produto: {NomeProduto}, Email do Comprador: {EmailClienteMelhorLance} Melhor lance: {MelhorLance}";
 
     }
     public override string ToString()
