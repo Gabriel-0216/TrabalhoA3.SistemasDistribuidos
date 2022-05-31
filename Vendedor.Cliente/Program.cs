@@ -3,7 +3,7 @@ using System.Text;
 
 var finalizar = false;
 var listaProdutosDoVendedor = new List<Produto>();
-
+const string IP_SERVIDOR = "";
 const string INICIAR_LEILAO = "INICIAR_LEILAO";
 const string FINALIZAR_LEILAO = "FINALIZAR_LEILAO";
 Console.WriteLine("CLIENTE: VENDEDOR");
@@ -152,7 +152,7 @@ void FinalizarLeilao()
 
 TcpClient CriarClienteTcp()
 {
-    return new TcpClient("127.0.0.1", 1302);
+    return new TcpClient(IP_SERVIDOR, 1302);
 }
 
 public class Vendedor

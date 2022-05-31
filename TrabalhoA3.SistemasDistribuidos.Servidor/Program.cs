@@ -12,7 +12,7 @@ listener.Start();
 
 while (true)
 {
-    Console.WriteLine("Esperando conexão.");
+    Console.WriteLine($"Esperando conexão. IP: {System.Net.IPAddress.Any}:1302");
     var client = listener.AcceptTcpClient();
     Console.WriteLine("Cliente aceito");
 

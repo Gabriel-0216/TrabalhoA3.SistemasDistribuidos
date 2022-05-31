@@ -2,6 +2,7 @@
 using System.Text;
 
 var finalizar = false;
+const string IP_SERVIDOR = "";
 const string LISTAR_PRODUTOS = "LISTAR_PRODUTOS";
 const string DAR_LANCE = "DAR_LANCE";
 
@@ -109,7 +110,7 @@ void RequisitarProdutos()
 
 TcpClient CriarClienteTcp()
 {
-    return new TcpClient("127.0.0.1", 1302);
+    return new TcpClient(IP_SERVIDOR, 1302);
 }
 
 public class Comprador
