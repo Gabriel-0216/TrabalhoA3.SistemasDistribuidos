@@ -3,14 +3,14 @@ using System.Text;
 
 var finalizar = false;
 var listaProdutosDoVendedor = new List<Produto>();
-const string IP_SERVIDOR = "";
-const string INICIAR_LEILAO = "INICIAR_LEILAO";
-const string FINALIZAR_LEILAO = "FINALIZAR_LEILAO";
-Console.WriteLine("CLIENTE: VENDEDOR");
+const string IP_SERVIDOR = @"";
+const string INICIAR_LEILAO = @"INICIAR_LEILAO";
+const string FINALIZAR_LEILAO = @"FINALIZAR_LEILAO";
+Console.WriteLine(@"CLIENTE: VENDEDOR");
 
-Console.WriteLine("Digite o seu nome:");
+Console.WriteLine(@"Digite o seu nome:");
 var nome = Console.ReadLine();
-Console.WriteLine("Digite o seu email:");
+Console.WriteLine(@"Digite o seu email:");
 var email = Console.ReadLine();
 
 var vendedor = new Vendedor() { Email = email, Nome = nome };
@@ -18,12 +18,12 @@ var vendedor = new Vendedor() { Email = email, Nome = nome };
 
 while(finalizar is not true)
 {
-    Console.WriteLine("----------------------------");
-    Console.WriteLine("Digite 1 para cadastrar um novo produto.");
-    Console.WriteLine("Digite 2 para finalizar um leilão.");
-    Console.WriteLine("Digite 3 para listar meus produtos em leilão");
-    Console.WriteLine("Digite 0 para finalizar a aplicação.");
-    Console.WriteLine("-----------------------------------------");
+    Console.WriteLine(@"----------------------------");
+    Console.WriteLine(@"Digite 1 para cadastrar um novo produto.");
+    Console.WriteLine(@"Digite 2 para finalizar um leilão.");
+    Console.WriteLine(@"Digite 3 para listar meus produtos em leilão");
+    Console.WriteLine(@"Digite 0 para finalizar a aplicação.");
+    Console.WriteLine(@"-----------------------------------------");
 
     try
     {
@@ -32,20 +32,20 @@ while(finalizar is not true)
         {
             case 1:
                 CadastrarNovoProduto();
-                Console.WriteLine("Clicar em algo para continuar.");
+                Console.WriteLine(@"Clicar em algo para continuar.");
                 Console.ReadKey();
                 Console.Clear();
                 break;
             case 2:
                 FinalizarLeilao();
-                Console.WriteLine("Clicar em algo para continuar.");
+                Console.WriteLine(@"Clicar em algo para continuar.");
                 Console.ReadKey();
                 Console.Clear();
                 break;
             case 3:
-                Console.WriteLine("Listagem dos produtos em leilão.");
+                Console.WriteLine(@"Listagem dos produtos em leilão.");
                 ListarProdutosEmLeilao();
-                Console.WriteLine("Clicar em algo para continuar.");
+                Console.WriteLine(@"Clicar em algo para continuar.");
                 Console.ReadKey();
                 Console.Clear();
                 break;
@@ -53,14 +53,14 @@ while(finalizar is not true)
                 finalizar = true;
                 break;
             default:
-                Console.WriteLine("Opção inexistente.");
+                Console.WriteLine(@"Opção inexistente.");
                 break;
         }
 
     }
     catch(Exception ex)
     {
-        Console.WriteLine("Digite um número para continuar.");
+        Console.WriteLine(@"Digite um número para continuar.");
     }
 }
 
@@ -69,7 +69,7 @@ void ListarProdutosEmLeilao()
 {
     if(listaProdutosDoVendedor.Count == 0)
     {
-        Console.WriteLine("Nenhum produto em leilão.");
+        Console.WriteLine(@"Nenhum produto em leilão.");
         return;
     }
     foreach(var item in listaProdutosDoVendedor)
@@ -83,9 +83,9 @@ void CadastrarNovoProduto()
 {
     var continuar = false;
     var valor = 0;
-    Console.WriteLine("Digite o nome do produto.");
+    Console.WriteLine(@"Digite o nome do produto.");
     var nome = Console.ReadLine();
-    Console.WriteLine("Digite o lance mínimo do produto.");
+    Console.WriteLine(@"Digite o lance mínimo do produto.");
     while(continuar is not true)
     {
         try
@@ -95,7 +95,7 @@ void CadastrarNovoProduto()
         }
         catch(Exception ex)
         {
-            Console.WriteLine("Digite um valor válido.");
+            Console.WriteLine(@"Digite um valor válido.");
         }
     }
     var produto = new Produto() { NomeProduto = nome, EmailVendedor = vendedor.Email, LanceMinimo = valor };
@@ -106,7 +106,7 @@ void CadastrarNovoProduto()
     var envioDados = Encoding.ASCII.GetBytes(mensagem);
     var stream = client.GetStream();
     stream.Write(envioDados, 0, envioDados.Length);
-    Console.WriteLine("Enviando requisição ao servidor.");
+    Console.WriteLine(@"Enviando requisição ao servidor.");
 
     var streamReader = new StreamReader(stream);
     var resposta = streamReader.ReadLine();
@@ -125,7 +125,7 @@ void CadastrarNovoProduto()
     }
     else
     {
-        Console.WriteLine("Não tivemos resposta do servidor!");
+        Console.WriteLine(@"Não tivemos resposta do servidor!");
     }
 
 }
@@ -133,27 +133,27 @@ void FinalizarLeilao()
 {
     if (listaProdutosDoVendedor.Count == 0)
     {
-        Console.WriteLine("Você não tem nenhum produto em leilão!");
+        Console.WriteLine(@"Você não tem nenhum produto em leilão!");
         return;
     }
     var continuar = false;
     var idProduto = 0;
     var client = CriarClienteTcp();
     ListarProdutosEmLeilao();
-    Console.WriteLine("Digite o ID do produto a ser finalizado o leilão?");
+    Console.WriteLine(@"Digite o ID do produto a ser finalizado o leilão?");
     while(continuar is not true)
     {
         try
         {
             idProduto = Convert.ToInt32(Console.ReadLine());
             var produto = listaProdutosDoVendedor.FirstOrDefault(p => p.Id == idProduto);
-            if (produto is null) Console.WriteLine("Esse produto não é valido, tente novamente.");
+            if (produto is null) Console.WriteLine(@"Esse produto não é valido, tente novamente.");
 
             continuar = true;
         }
         catch(Exception ex)
         {
-            Console.WriteLine("Digite um número válido!");
+            Console.WriteLine(@"Digite um número válido!");
         }
     }
     var mensagem = @$"{FINALIZAR_LEILAO} \n Id: ${idProduto}$, EMAIL_COMPRADOR: &{vendedor.Email}&";
@@ -161,23 +161,23 @@ void FinalizarLeilao()
     var envioDados = Encoding.ASCII.GetBytes(mensagem);
     var stream = client.GetStream();
     stream.Write(envioDados, 0, envioDados.Length);
-    Console.WriteLine($"Enviando requisição para finalizar leilão do produto de id: {idProduto}.");
+    Console.WriteLine(@$"Enviando requisição para finalizar leilão do produto de id: {idProduto}.");
 
     var streamReader = new StreamReader(stream);
     var resposta = streamReader.ReadLine();
-    if(resposta is not null && resposta.Contains("LEILÃO FINALIZADO"))
+    if(resposta is not null && resposta.Contains(@"LEILÃO FINALIZADO"))
     {
         Console.WriteLine(resposta);
         var produto = listaProdutosDoVendedor.FirstOrDefault(p => p.Id == idProduto);
         if(produto is not null)
         {
             listaProdutosDoVendedor.Remove(produto);
-            Console.WriteLine("Leilão finalizado com sucesso!");
+            Console.WriteLine(@"Leilão finalizado com sucesso!");
         }
     }
     else
     {
-        Console.WriteLine("Ocorreu um erro");
+        Console.WriteLine(@"Ocorreu um erro");
     }
 }
 
@@ -202,7 +202,7 @@ public class Produto
 
     public string RetornarProduto()
     {
-        return $"Id do produto: {Id}; Nome do produto: {NomeProduto}";
+        return @$"Id do produto: {Id}; Nome do produto: {NomeProduto}";
     }
     public override string ToString()
     {

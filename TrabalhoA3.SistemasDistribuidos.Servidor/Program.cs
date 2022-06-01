@@ -1,11 +1,11 @@
 ﻿using System.Net.Sockets;
 using System.Text;
 
-const string INICIAR_LEILAO = "INICIAR_LEILAO";
-const string FINALIZAR_LEILAO = "FINALIZAR_LEILAO";
-const string LISTAR_PRODUTOS = "LISTAR_PRODUTOS";
-const string DAR_LANCE = "DAR_LANCE";
-const string CONSULTAR_ARREMATADOS = "CONSULTAR_ARREMATADOS";
+const string INICIAR_LEILAO = @"INICIAR_LEILAO";
+const string FINALIZAR_LEILAO = @"FINALIZAR_LEILAO";
+const string LISTAR_PRODUTOS = @"LISTAR_PRODUTOS";
+const string DAR_LANCE = @"DAR_LANCE";
+const string CONSULTAR_ARREMATADOS = @"CONSULTAR_ARREMATADOS";
 
 var listaProdutosLeilao = new List<Produto>();
 var listaProdutosArrematados = new List<Produto>();
@@ -15,9 +15,9 @@ listener.Start();
 
 while (true)
 {
-    Console.WriteLine($"Esperando conexão. IP: {System.Net.IPAddress.Any}:1302");
+    Console.WriteLine(@$"Esperando conexão. IP: {System.Net.IPAddress.Any}:1302");
     var client = listener.AcceptTcpClient();
-    Console.WriteLine($"CLIENTE ACEITO E RECEBIDO IP: {client.Client.RemoteEndPoint}");
+    Console.WriteLine(@$"CLIENTE ACEITO E RECEBIDO IP: {client.Client.RemoteEndPoint}");
 
     var stream = client.GetStream();
     var streamReader = new StreamReader(client.GetStream());
@@ -37,42 +37,42 @@ while (true)
         var request = Encoding.UTF8.GetString(buffer, 0, recv);
         if (request == LISTAR_PRODUTOS)
         {
-            Console.WriteLine("REQUISIÇÃO PARA LISTAGEM DE PRODUTOS EM LEILÃO.");
+            Console.WriteLine(@"REQUISIÇÃO PARA LISTAGEM DE PRODUTOS EM LEILÃO.");
             RetornarListaProdutos(streamWriter);
         }
         else if(request.Contains(DAR_LANCE))
         {
-            Console.WriteLine("LANCE RECEBIDO.");
+            Console.WriteLine(@"LANCE RECEBIDO.");
             var sucesso = DarLance(request, streamWriter);
-            if (sucesso) streamWriter.WriteLine("SEU LANCE FOI COMPUTADO COM SUCESSO.");
-            else streamWriter.WriteLine("OCORREU UM ERRO.");
+            if (sucesso) streamWriter.WriteLine(@"SEU LANCE FOI COMPUTADO COM SUCESSO.");
+            else streamWriter.WriteLine(@"OCORREU UM ERRO.");
             
         }
         else if(request.Contains(INICIAR_LEILAO))
         {
-            Console.WriteLine("REQUISIÇÃO PARA CADASTRAR PRODUTO EM LEILÃO.");
+            Console.WriteLine(@"REQUISIÇÃO PARA CADASTRAR PRODUTO EM LEILÃO.");
             var idCadastrado = CadastrarProdutoLeilao(request);
-            streamWriter.WriteLine($"PRODUTO CADASTRADO COM SUCESSO, ID DO PRODUTO CRIADO: ${idCadastrado}$.");
+            streamWriter.WriteLine(@$"PRODUTO CADASTRADO COM SUCESSO, ID DO PRODUTO CRIADO: ${idCadastrado}$.");
         }
         else if(request.Contains(FINALIZAR_LEILAO))
         {
-            Console.WriteLine("REQUISIÇÃO PARA FINALIZAR LEILÃO.");
+            Console.WriteLine(@"REQUISIÇÃO PARA FINALIZAR LEILÃO.");
             streamWriter.WriteLine(FinalizarLeilao(request));
         }
         else if (request.Contains(CONSULTAR_ARREMATADOS))
         {
-            Console.WriteLine("CONSULTA PARA VERIFICAR PRODUTOS ARREMATADOS");
+            Console.WriteLine(@"CONSULTA PARA VERIFICAR PRODUTOS ARREMATADOS");
             RetornarProdutosArrematados(request, streamWriter);
         }
         else
         {
-            streamWriter.WriteLine("Não entendi a requisição");
+            streamWriter.WriteLine(@"Não entendi a requisição");
         }
         streamWriter.Flush();
     }
     catch(Exception ex)
     {
-        Console.WriteLine("Ruim");
+        Console.WriteLine(@"Ruim");
         throw;
     }
 }
@@ -91,7 +91,7 @@ string FinalizarLeilao(string request)
     var produto = listaProdutosLeilao.FirstOrDefault(p => p.Id == idProduto);
     if(produto is null)
     {
-        return "produto não existe";
+        return @"produto não existe";
     }
 
     if(produto.EmailVendedor == emailVendedor)
@@ -104,7 +104,7 @@ string FinalizarLeilao(string request)
         }
         return mensagemRetornoFinalizacao;
     }
-    return "Você não tem autorização para encerrar esse leilão.";
+    return @"Você não tem autorização para encerrar esse leilão.";
 
 }
 bool DarLance(string request, StreamWriter writer)
@@ -125,17 +125,17 @@ bool DarLance(string request, StreamWriter writer)
     var produto = listaProdutosLeilao.FirstOrDefault(p => p.Id == idProduto);
     if(produto is null)
     {
-        writer.WriteLine("Produto não existe!");
+        writer.WriteLine(@"Produto não existe!");
         return false;
     }
     if(valorLance <= produto.MelhorLance)
     {
-        writer.WriteLine("Seu lance é menor que o melhor lance atual do produto.");
+        writer.WriteLine(@"Seu lance é menor que o melhor lance atual do produto.");
         return false;
     }
     if(produto.Finalizado == true)
     {
-        writer.WriteLine("O leilão desse produto já foi encerrado.");
+        writer.WriteLine(@"O leilão desse produto já foi encerrado.");
     }
 
     produto.MelhorLance = valorLance;
@@ -171,7 +171,7 @@ void RetornarListaProdutos(StreamWriter streamWriter)
 {
     if(listaProdutosLeilao.Count == 0)
     {
-        streamWriter.WriteLine("Nenhum produto em leilão");
+        streamWriter.WriteLine(@"Nenhum produto em leilão");
         return;
     }
     foreach(var item in listaProdutosLeilao.Where(p=> p.Finalizado == false).ToList())
@@ -195,10 +195,10 @@ void RetornarProdutosArrematados(string request, StreamWriter streamWriter)
                                             .ToList();
     if(listaProdutosArrematados.Count == 0)
     {
-        streamWriter.WriteLine("Você não arrematou nenhum leilão.");
+        streamWriter.WriteLine(@"Você não arrematou nenhum leilão.");
         return;
     }
-    var produtos = "LEILÃO FINALIZADO;";
+    var produtos = @"LEILÃO FINALIZADO;";
     foreach(var item in listaProdutosArrematados)
     {
         produtos += item.RetornarArremate();
@@ -220,17 +220,17 @@ public class Produto
     public string FinalizarLeilao()
     {
         Finalizado = true;
-        if (!TeveLances) return $"LEILÃO FINALIZADO, O produto de ID: {Id}, Nome :{NomeProduto}, NÃO TEVE NENHUM LANCE REGISTRADO.";
+        if (!TeveLances) return @$"LEILÃO FINALIZADO, O produto de ID: {Id}, Nome :{NomeProduto}, NÃO TEVE NENHUM LANCE REGISTRADO.";
 
-        return $"LEILÃO FINALIZADO, DADOS: Id: {Id}, Nome do produto: {NomeProduto}, Email do Comprador: {EmailClienteMelhorLance} Melhor lance: {MelhorLance}";
+        return @$"LEILÃO FINALIZADO, DADOS: Id: {Id}, Nome do produto: {NomeProduto}, Email do Comprador: {EmailClienteMelhorLance} Melhor lance: {MelhorLance}";
 
     }
     public string RetornarArremate()
     {
-        return $"({NomeProduto}; Lance: {MelhorLance};)";
+        return @$"({NomeProduto}; Lance: {MelhorLance};)";
     }
     public override string ToString()
     {
-        return $"Id: {Id}, Nome do produto: {NomeProduto}, Melhor lance: {MelhorLance}, já foi finalizado: {Finalizado}";
+        return @$"Id: {Id}, Nome do produto: {NomeProduto}, Melhor lance: {MelhorLance}, já foi finalizado: {Finalizado}";
     }
 }
