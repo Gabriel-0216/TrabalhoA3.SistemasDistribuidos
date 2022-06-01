@@ -44,7 +44,7 @@ while (true)
         {
             Console.WriteLine(@"LANCE RECEBIDO.");
             var sucesso = DarLance(request, streamWriter);
-            if (sucesso) streamWriter.WriteLine(@"SEU LANCE FOI COMPUTADO COM SUCESSO.");
+            if (sucesso) streamWriter.WriteLine(@"LANCE COMPUTADO.");
             else streamWriter.WriteLine(@"OCORREU UM ERRO.");
             
         }
@@ -52,7 +52,7 @@ while (true)
         {
             Console.WriteLine(@"REQUISIÇÃO PARA CADASTRAR PRODUTO EM LEILÃO.");
             var idCadastrado = CadastrarProdutoLeilao(request);
-            streamWriter.WriteLine(@$"PRODUTO CADASTRADO COM SUCESSO, ID DO PRODUTO CRIADO: ${idCadastrado}$.");
+            streamWriter.WriteLine(@$"CADASTRADO; ID: ${idCadastrado}$.");
         }
         else if(request.Contains(FINALIZAR_LEILAO))
         {
@@ -130,12 +130,12 @@ bool DarLance(string request, StreamWriter writer)
     }
     if(valorLance <= produto.MelhorLance)
     {
-        writer.WriteLine(@"Seu lance é menor que o melhor lance atual do produto.");
+        writer.WriteLine(@"Lance menor ou igual ao lance atual.");
         return false;
     }
     if(produto.Finalizado == true)
     {
-        writer.WriteLine(@"O leilão desse produto já foi encerrado.");
+        writer.WriteLine(@"Esse leilão já foi encerrado.");
     }
 
     produto.MelhorLance = valorLance;
