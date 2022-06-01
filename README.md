@@ -1,3 +1,4 @@
+https://drive.google.com/file/d/13KBlbYNP0UZhnFzOmRlJ6tHkDgbpdgCY/view?usp=sharing
 # Requisitos mínimos de software:
 ⦁	.NET 6
 ⦁	Linux Mint 20.3
