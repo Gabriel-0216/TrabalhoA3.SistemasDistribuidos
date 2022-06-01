@@ -5,7 +5,10 @@ const string INICIAR_LEILAO = "INICIAR_LEILAO";
 const string FINALIZAR_LEILAO = "FINALIZAR_LEILAO";
 const string LISTAR_PRODUTOS = "LISTAR_PRODUTOS";
 const string DAR_LANCE = "DAR_LANCE";
+const string CONSULTAR_ARREMATADOS = "CONSULTAR_ARREMATADOS";
+
 var listaProdutosLeilao = new List<Produto>();
+var listaProdutosArrematados = new List<Produto>();
 
 var listener = new TcpListener(System.Net.IPAddress.Any, 1302);
 listener.Start();
@@ -14,7 +17,7 @@ while (true)
 {
     Console.WriteLine($"Esperando conexão. IP: {System.Net.IPAddress.Any}:1302");
     var client = listener.AcceptTcpClient();
-    Console.WriteLine("Cliente aceito");
+    Console.WriteLine($"CLIENTE ACEITO E RECEBIDO IP: {client.Client.RemoteEndPoint}");
 
     var stream = client.GetStream();
     var streamReader = new StreamReader(client.GetStream());
@@ -49,12 +52,17 @@ while (true)
         {
             Console.WriteLine("REQUISIÇÃO PARA CADASTRAR PRODUTO EM LEILÃO.");
             var idCadastrado = CadastrarProdutoLeilao(request);
-            streamWriter.WriteLine($"Cadastrado com ID: ${idCadastrado}$.");
+            streamWriter.WriteLine($"PRODUTO CADASTRADO COM SUCESSO, ID DO PRODUTO CRIADO: ${idCadastrado}$.");
         }
         else if(request.Contains(FINALIZAR_LEILAO))
         {
             Console.WriteLine("REQUISIÇÃO PARA FINALIZAR LEILÃO.");
             streamWriter.WriteLine(FinalizarLeilao(request));
+        }
+        else if (request.Contains(CONSULTAR_ARREMATADOS))
+        {
+            Console.WriteLine("CONSULTA PARA VERIFICAR PRODUTOS ARREMATADOS");
+            RetornarProdutosArrematados(request, streamWriter);
         }
         else
         {
@@ -88,7 +96,13 @@ string FinalizarLeilao(string request)
 
     if(produto.EmailVendedor == emailVendedor)
     {
-        return produto.FinalizarLeilao();
+        var mensagemRetornoFinalizacao = produto.FinalizarLeilao();
+        listaProdutosLeilao.Remove(produto);
+        if (produto.TeveLances)
+        {
+            listaProdutosArrematados.Add(produto);
+        }
+        return mensagemRetornoFinalizacao;
     }
     return "Você não tem autorização para encerrar esse leilão.";
 
@@ -126,6 +140,7 @@ bool DarLance(string request, StreamWriter writer)
 
     produto.MelhorLance = valorLance;
     produto.EmailClienteMelhorLance = emailComprador;
+    produto.TeveLances = true;
     return true;
 }
 int CadastrarProdutoLeilao(string request)
@@ -154,11 +169,41 @@ int CadastrarProdutoLeilao(string request)
 
 void RetornarListaProdutos(StreamWriter streamWriter)
 {
-    foreach(var item in listaProdutosLeilao.Where(p=> p.Finalizado == false))
+    if(listaProdutosLeilao.Count == 0)
+    {
+        streamWriter.WriteLine("Nenhum produto em leilão");
+        return;
+    }
+    foreach(var item in listaProdutosLeilao.Where(p=> p.Finalizado == false).ToList())
     {
         streamWriter.WriteLine(item.ToString());
     }
 
+}
+
+void RetornarProdutosArrematados(string request, StreamWriter streamWriter)
+{
+    int inicioIndex = 0, ultimoIndex = 0;
+    inicioIndex = request.IndexOf("%");
+    ultimoIndex = request.LastIndexOf("%");
+    var emailComprador = request.Substring(inicioIndex + 1, ultimoIndex - inicioIndex - 1);
+
+    var listaArrematadosComprador = listaProdutosArrematados
+        .Where(p => p.EmailClienteMelhorLance == emailComprador &&
+                                            p.Finalizado == true &&
+                                            p.TeveLances == true)
+                                            .ToList();
+    if(listaProdutosArrematados.Count == 0)
+    {
+        streamWriter.WriteLine("Você não arrematou nenhum leilão.");
+        return;
+    }
+    var produtos = "LEILÃO FINALIZADO;";
+    foreach(var item in listaProdutosArrematados)
+    {
+        produtos += item.RetornarArremate();
+    }
+    streamWriter.WriteLine(produtos);
 }
 
 
@@ -170,12 +215,19 @@ public class Produto
     public decimal MelhorLance { get; set; }
     public string EmailClienteMelhorLance { get; set; } = string.Empty;
     public bool Finalizado { get; set; } = false;
+    public bool TeveLances { get; set; } = false;
 
     public string FinalizarLeilao()
     {
         Finalizado = true;
+        if (!TeveLances) return $"LEILÃO FINALIZADO, O produto de ID: {Id}, Nome :{NomeProduto}, NÃO TEVE NENHUM LANCE REGISTRADO.";
+
         return $"LEILÃO FINALIZADO, DADOS: Id: {Id}, Nome do produto: {NomeProduto}, Email do Comprador: {EmailClienteMelhorLance} Melhor lance: {MelhorLance}";
 
+    }
+    public string RetornarArremate()
+    {
+        return $"({NomeProduto}; Lance: {MelhorLance};)";
     }
     public override string ToString()
     {

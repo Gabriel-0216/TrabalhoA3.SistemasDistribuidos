@@ -43,6 +43,7 @@ while(finalizar is not true)
                 Console.Clear();
                 break;
             case 3:
+                Console.WriteLine("Listagem dos produtos em leilão.");
                 ListarProdutosEmLeilao();
                 Console.WriteLine("Clicar em algo para continuar.");
                 Console.ReadKey();
@@ -66,6 +67,11 @@ while(finalizar is not true)
 
 void ListarProdutosEmLeilao()
 {
+    if(listaProdutosDoVendedor.Count == 0)
+    {
+        Console.WriteLine("Nenhum produto em leilão.");
+        return;
+    }
     foreach(var item in listaProdutosDoVendedor)
     {
         Console.WriteLine(item.RetornarProduto());
@@ -76,7 +82,7 @@ void ListarProdutosEmLeilao()
 void CadastrarNovoProduto()
 {
     var continuar = false;
-    var valor = 0.0M;
+    var valor = 0;
     Console.WriteLine("Digite o nome do produto.");
     var nome = Console.ReadLine();
     Console.WriteLine("Digite o lance mínimo do produto.");
@@ -84,7 +90,7 @@ void CadastrarNovoProduto()
     {
         try
         {
-            valor = Convert.ToDecimal(Console.ReadLine());
+            valor = Convert.ToInt32(Console.ReadLine());
             continuar = true;
         }
         catch(Exception ex)
@@ -100,23 +106,36 @@ void CadastrarNovoProduto()
     var envioDados = Encoding.ASCII.GetBytes(mensagem);
     var stream = client.GetStream();
     stream.Write(envioDados, 0, envioDados.Length);
-    Console.WriteLine("Enviando ao servidor.");
+    Console.WriteLine("Enviando requisição ao servidor.");
+
     var streamReader = new StreamReader(stream);
     var resposta = streamReader.ReadLine();
+    if(resposta is not null)
+    {
+        int inicioIndex = 0, ultimoIndex = 0;
 
-    int inicioIndex = 0, ultimoIndex = 0;
-
-    inicioIndex = resposta.IndexOf("$");
-    ultimoIndex = resposta.LastIndexOf("$");
-    var idCadastrado = resposta.Substring(inicioIndex + 1, ultimoIndex - inicioIndex - 1);
-    produto.Id = Convert.ToInt32(idCadastrado);
-    stream.Close();
-    client.Close();
-    listaProdutosDoVendedor.Add(produto);
+        inicioIndex = resposta.IndexOf("$");
+        ultimoIndex = resposta.LastIndexOf("$");
+        var idCadastrado = resposta.Substring(inicioIndex + 1, ultimoIndex - inicioIndex - 1);
+        produto.Id = Convert.ToInt32(idCadastrado);
+        stream.Close();
+        client.Close();
+        listaProdutosDoVendedor.Add(produto);
+        Console.WriteLine(resposta);
+    }
+    else
+    {
+        Console.WriteLine("Não tivemos resposta do servidor!");
+    }
 
 }
 void FinalizarLeilao()
 {
+    if (listaProdutosDoVendedor.Count == 0)
+    {
+        Console.WriteLine("Você não tem nenhum produto em leilão!");
+        return;
+    }
     var continuar = false;
     var idProduto = 0;
     var client = CriarClienteTcp();
@@ -142,10 +161,24 @@ void FinalizarLeilao()
     var envioDados = Encoding.ASCII.GetBytes(mensagem);
     var stream = client.GetStream();
     stream.Write(envioDados, 0, envioDados.Length);
-    Console.WriteLine("Enviando ao servidor.");
+    Console.WriteLine($"Enviando requisição para finalizar leilão do produto de id: {idProduto}.");
+
     var streamReader = new StreamReader(stream);
     var resposta = streamReader.ReadLine();
-    Console.WriteLine(resposta);
+    if(resposta is not null && resposta.Contains("LEILÃO FINALIZADO"))
+    {
+        Console.WriteLine(resposta);
+        var produto = listaProdutosDoVendedor.FirstOrDefault(p => p.Id == idProduto);
+        if(produto is not null)
+        {
+            listaProdutosDoVendedor.Remove(produto);
+            Console.WriteLine("Leilão finalizado com sucesso!");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Ocorreu um erro");
+    }
 }
 
 
@@ -165,7 +198,7 @@ public class Produto
     public int Id { get; set; } = 0;
     public string NomeProduto { get; set; } = string.Empty;
     public string EmailVendedor { get; set; } = string.Empty;
-    public decimal LanceMinimo { get; set; }
+    public int LanceMinimo { get; set; }
 
     public string RetornarProduto()
     {
