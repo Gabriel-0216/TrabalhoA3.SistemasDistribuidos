@@ -1,19 +1,18 @@
 ﻿using A3.Gestao.Servidor.Models;
-using A3.Gestao.Servidor.Models.Constante;
+using A3.Gestao.Servidor.Models.Enum;
 using A3.Gestao.Servidor.Repositories;
 using A3.Gestao.Servidor.Utils;
 
 namespace A3.Gestao.Servidor.Services
 {
-    public class LeilaoService(IProdutoRepository repository, IList<Delimitadores> delimitadores)
+    public class LeilaoService(IProdutoRepository repository)
     {
         private readonly IProdutoRepository _repository = repository;
-        private IList<Delimitadores> _delimitadores = delimitadores;
         public ResultadoOperacao DarLance(string request)
         {
-            var produtoId = Convert.ToInt32(RequestParser.Extrair(request, _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.ID_PRODUTO)));
-            var valorLance = Convert.ToDecimal(RequestParser.Extrair(request, _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.DECIMAL)));
-            var emailComprador = RequestParser.Extrair(request, _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.TEXTO));
+            var produtoId = Convert.ToInt32(RequestParser.Extrair(request, Delimitadores.IdProduto));
+            var valorLance = Convert.ToDecimal(RequestParser.Extrair(request, Delimitadores.Decimal));
+            var emailComprador = RequestParser.Extrair(request, Delimitadores.Texto);
 
             var produto = _repository.Buscar(produtoId);
             if (produto == null)
@@ -47,17 +46,16 @@ namespace A3.Gestao.Servidor.Services
 
         public int Cadastro(string request)
         {
-            var delimitadorNome = _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.NOME);
+            var delimitadorNome = Delimitadores.Nome;
             var produtoNome = RequestParser.Extrair(request, delimitadorNome);
 
-            var delimitadorEmail = _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.EMAIL_VENDEDOR);
+            var delimitadorEmail = Delimitadores.EmailVendedor;
             var emailVendedor = RequestParser.Extrair(request, delimitadorEmail);
 
-            var delimitadorValor = _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.VALOR_LANCE);
+            var delimitadorValor = Delimitadores.ValorLance;
             var valor = RequestParser.Extrair(request, delimitadorValor);
 
-
-            var produto = new Produto() { Nome = produtoNome, EmailVendedor = emailVendedor, MelhorLance = Convert.ToDecimal(valor) };
+            var produto = new Produto(produtoNome, emailVendedor, Convert.ToDecimal(valor));
 
             _repository.Adicionar(produto);
             return produto.Id;
@@ -65,7 +63,7 @@ namespace A3.Gestao.Servidor.Services
 
         public string ConsultaArrematados(string request)
         {
-            var delimitadorEmail = _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.EMAIL_COMPRADOR);
+            var delimitadorEmail = Delimitadores.EmailComprador;
             var emailComprador = RequestParser.Extrair(request, delimitadorEmail);
 
             var produtos = _repository.ListarFinalizados();
@@ -77,16 +75,16 @@ namespace A3.Gestao.Servidor.Services
                 mensagem = "Você não arrematou nenhum leilão";
 
             foreach(var produto in produtos)
-                mensagem += $"{produto.Status}";
+                mensagem += $"{produto.Status()}";
 
             return mensagem;
         }
         public string FinalizarLeilao(string request)
         {
-            var delimitadorId = _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.ID_PRODUTO);
+            var delimitadorId = Delimitadores.IdProduto;
             var idProduto = RequestParser.Extrair(request, delimitadorId);
 
-            var delimitadorEmail = _delimitadores.FirstOrDefault(p => p.Nome == NomeDelimitador.EMAIL_VENDEDOR);
+            var delimitadorEmail = Delimitadores.EmailVendedor;
             var emailVendedor = RequestParser.Extrair(request, delimitadorEmail);
 
             var produto = _repository.Buscar(Convert.ToInt32(idProduto));

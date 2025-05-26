@@ -9,7 +9,5 @@ namespace A3.Gestao.Servidor.Repositories
         void Adicionar(Produto produto);
         IList<Produto> Listar();
         IList<Produto> ListarFinalizados();
-
-
     }
 }
