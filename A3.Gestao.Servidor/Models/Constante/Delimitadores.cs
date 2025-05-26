@@ -12,5 +12,7 @@
         public const string VALOR_LANCE = "VALORLANCE";
         public const string EMAIL_COMPRADOR = "EMAILCOMPRADOR";
         public const string ID_PRODUTO = "IDPRODUTO";
+        public const string DECIMAL = "DECIMAL";
+        public const string TEXTO = "TEXTO";
     }
 }
