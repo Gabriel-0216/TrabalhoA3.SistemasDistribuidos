@@ -10,16 +10,17 @@ namespace A3.Gestao.Servidor.Services
         private readonly IProdutoRepository _repository = repository;
         public ResultadoOperacao DarLance(string request)
         {
-            var produtoId = Convert.ToInt32(RequestParser.Extrair(request, Delimitadores.IdProduto));
-            var valorLance = Convert.ToDecimal(RequestParser.Extrair(request, Delimitadores.Decimal));
-            var emailComprador = RequestParser.Extrair(request, Delimitadores.Texto);
-
-            var produto = _repository.Buscar(produtoId);
-            if (produto == null)
-                return ResultadoOperacao.CriarErro("Produto não encontrado");
-
             try
             {
+                var produtoId = ProcessarIdProduto(request);
+                var valorLance = ProcessarValorLance(request);
+
+                var produto = _repository.Buscar(produtoId);
+                if (produto is null)
+                    return ResultadoOperacao.CriarErro("Produto não encontrado");
+
+                var emailComprador = Processar(request, Delimitadores.EmailComprador);
+
                 produto.AtualizarLance(valorLance, emailComprador);
                 return ResultadoOperacao.CriarSucesso();
             }
@@ -46,25 +47,14 @@ namespace A3.Gestao.Servidor.Services
 
         public int Cadastro(string request)
         {
-            var delimitadorNome = Delimitadores.Nome;
-            var produtoNome = RequestParser.Extrair(request, delimitadorNome);
-
-            var delimitadorEmail = Delimitadores.EmailVendedor;
-            var emailVendedor = RequestParser.Extrair(request, delimitadorEmail);
-
-            var delimitadorValor = Delimitadores.ValorLance;
-            var valor = RequestParser.Extrair(request, delimitadorValor);
-
-            var produto = new Produto(produtoNome, emailVendedor, Convert.ToDecimal(valor));
-
+            var produto = RetornaProdutoCadastro(request);
             _repository.Adicionar(produto);
             return produto.Id;
         }
 
         public string ConsultaArrematados(string request)
         {
-            var delimitadorEmail = Delimitadores.EmailComprador;
-            var emailComprador = RequestParser.Extrair(request, delimitadorEmail);
+            var emailComprador = Processar(request, Delimitadores.EmailComprador);
 
             var produtos = _repository.ListarFinalizados();
 
@@ -81,13 +71,11 @@ namespace A3.Gestao.Servidor.Services
         }
         public string FinalizarLeilao(string request)
         {
-            var delimitadorId = Delimitadores.IdProduto;
-            var idProduto = RequestParser.Extrair(request, delimitadorId);
+            var idProduto = ProcessarIdProduto(request);
 
-            var delimitadorEmail = Delimitadores.EmailVendedor;
-            var emailVendedor = RequestParser.Extrair(request, delimitadorEmail);
+            var emailVendedor = Processar(request, Delimitadores.EmailVendedor);
 
-            var produto = _repository.Buscar(Convert.ToInt32(idProduto));
+            var produto = _repository.Buscar(idProduto);
             if (produto is null)
                 return @"produto não existe";
 
@@ -97,6 +85,33 @@ namespace A3.Gestao.Servidor.Services
             return "Você não tem autorização para encerrar esse leilão";
         }
 
+
+        private static Produto RetornaProdutoCadastro(string request)
+        {
+            var produtoNome = Processar(request, Delimitadores.Nome);
+            var emailVendedor = Processar(request, Delimitadores.EmailVendedor);
+            var valor = Processar(request, Delimitadores.ValorLance);
+            
+            return new Produto(produtoNome, emailVendedor, Convert.ToDecimal(valor));
+        }
+        private static int ProcessarIdProduto(string request)
+        {
+            if (!int.TryParse(RequestParser.Extrair(request, Delimitadores.IdProduto), out int idProduto))
+                throw new Exception("Não foi possível converter a requisição em um id produto válido");
+
+            return idProduto;
+        }
+        private static decimal ProcessarValorLance(string request)
+        {
+            if (!decimal.TryParse(RequestParser.Extrair(request, Delimitadores.Decimal), out decimal valorLance))
+                throw new Exception("Não foi possível converter o valor do lance em um decimal válido");
+
+            return valorLance;
+        }
+        private static string Processar(string request, Delimitadores delimitador)
+        {
+            return RequestParser.Extrair(request, delimitador);
+        }
 
     }
 }
