@@ -1,7 +1,5 @@
-﻿using A3.Gestao.Servidor.Services;
-using A3.Gestao.Servidor.Utils;
-using System;
-using System.IO;
+﻿using A3.Gestao.Servidor.Models.Constantes;
+using A3.Gestao.Servidor.Services;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,7 +8,7 @@ namespace A3.Gestao.Servidor
 {
     public class TcpServer(LeilaoService leilaoService, int port = 1302) : IDisposable
     {
-        private readonly TcpListener _listener = new TcpListener(IPAddress.Any, port);
+        private readonly TcpListener _listener = new(IPAddress.Any, port);
         private readonly LeilaoService _leilaoService = leilaoService;
         private bool _isRunning;
 
@@ -62,27 +60,23 @@ namespace A3.Gestao.Servidor
         {
             try
             {
-                if (request == "LISTAR_PRODUTOS")
+                if (request == Comandos.LISTAR_PRODUTOS)
                 {
                     return _leilaoService.RetornarProdutos();
                 }
-                else if (request.Contains("DAR_LANCE"))
+                else if (request.Contains(Comandos.DAR_LANCE))
                 {
-                    var resultado = _leilaoService.DarLance(request);
-                    return resultado.FoiSucesso ? "LANCE_ACEITO" : $"ERRO: {resultado.Mensagem}";
-
+                    return _leilaoService.DarLance(request).Mensagem;
                 }
-                else if (request.Contains("INICIAR_LEILAO"))
+                else if (request.Contains(Comandos.INICIAR_LEILAO))
                 {
-                    var id = _leilaoService.Cadastro(request);
-                    return @$"CADASTRADO; ID: ${id}$.";
+                    return _leilaoService.Cadastro(request);
                 }
-                else if (request.Contains("FINALIZAR_LEILAO"))
+                else if (request.Contains(Comandos.FINALIZAR_LEILAO))
                 {
                     return _leilaoService.FinalizarLeilao(request);
-
                 }
-                else if (request.Contains("CONSULTAR_ARREMATADOS"))
+                else if (request.Contains(Comandos.CONSULTAR_ARREMATADOS))
                 {
                     return _leilaoService.ConsultaArrematados(request);
                 }
@@ -92,6 +86,11 @@ namespace A3.Gestao.Servidor
             catch (FormatException ex)
             {
                 return $"ERRO_DE_FORMATO: {ex.Message}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro inesperado: {ex.Message}");
+                return "ERRO_INTERNO";
             }
         }
 

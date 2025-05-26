@@ -13,7 +13,7 @@
             Dados = dados;
         }
 
-        public static ResultadoOperacao CriarSucesso(string mensagem = "Operação concluída", object? dados = null) => new (true, mensagem, dados);
+        public static ResultadoOperacao CriarSucesso(string mensagem = "LANCE_ACEITO", object? dados = null) => new (true, mensagem, dados);
 
         public static ResultadoOperacao CriarErro(string mensagemErro) => new (false, mensagemErro);
     }

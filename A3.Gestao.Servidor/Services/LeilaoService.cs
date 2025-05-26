@@ -45,11 +45,11 @@ namespace A3.Gestao.Servidor.Services
 
         }
 
-        public int Cadastro(string request)
+        public string Cadastro(string request)
         {
             var produto = RetornaProdutoCadastro(request);
             _repository.Adicionar(produto);
-            return produto.Id;
+            return @$"${produto.Id}$";
         }
 
         public string ConsultaArrematados(string request)
@@ -96,14 +96,14 @@ namespace A3.Gestao.Servidor.Services
         }
         private static int ProcessarIdProduto(string request)
         {
-            if (!int.TryParse(RequestParser.Extrair(request, Delimitadores.IdProduto), out int idProduto))
+            if (!int.TryParse(Processar(request, Delimitadores.IdProduto), out int idProduto))
                 throw new Exception("Não foi possível converter a requisição em um id produto válido");
 
             return idProduto;
         }
         private static decimal ProcessarValorLance(string request)
         {
-            if (!decimal.TryParse(RequestParser.Extrair(request, Delimitadores.Decimal), out decimal valorLance))
+            if (!decimal.TryParse(Processar(request, Delimitadores.Decimal), out decimal valorLance))
                 throw new Exception("Não foi possível converter o valor do lance em um decimal válido");
 
             return valorLance;
