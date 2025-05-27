@@ -9,7 +9,7 @@ namespace A3.Gestao.Servidor.Utils
             if (string.IsNullOrEmpty(request))
                 throw new ArgumentException("Request não pode ser vazio");
 
-            var delimitadorString = delimitador.ToString();
+            var delimitadorString = Convert.ToChar(delimitador);
             var inicioIndex = request.IndexOf(delimitadorString);
             var ultimoIndex = request.LastIndexOf(delimitadorString);
 

@@ -4,10 +4,7 @@
     {
         Nome = '$',
         IdProduto = '$',
-        EmailVendedor = '#',
-        ValorLance = '&',
-        EmailComprador = '%',
-        Decimal = '%',
-        Texto = '&',
+        Email = '&',
+        ValorLance = '%',
     }
 }

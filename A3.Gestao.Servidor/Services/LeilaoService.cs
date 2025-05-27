@@ -8,88 +8,136 @@ namespace A3.Gestao.Servidor.Services
     public class LeilaoService(IProdutoRepository repository)
     {
         private readonly IProdutoRepository _repository = repository;
-        public ResultadoOperacao DarLance(string request)
+        public ResultadoOperacao<bool> DarLance(string request)
         {
+            var resultado = new ResultadoOperacao<bool>();
             try
             {
                 var produtoId = ProcessarIdProduto(request);
                 var valorLance = ProcessarValorLance(request);
 
                 var produto = _repository.Buscar(produtoId);
-                if (produto is null)
-                    return ResultadoOperacao.CriarErro("Produto não encontrado");
 
-                var emailComprador = Processar(request, Delimitadores.EmailComprador);
+                if (produto is null){
+                    resultado.CriarErro("Produto não foi encontrado");
+                    return resultado;
+                }
+
+                var emailComprador = Processar(request, Delimitadores.Email);
 
                 produto.AtualizarLance(valorLance, emailComprador);
-                return ResultadoOperacao.CriarSucesso();
+
+                resultado.CriarSucesso(true);
+                return resultado;
             }
             catch(Exception ex)
             {
-                return ResultadoOperacao.CriarErro(ex.Message);
+                resultado.CriarErro(ex.Message);
+                return resultado;
             }
         }
 
-        public string RetornarProdutos()
+        public ResultadoOperacao<IList<Produto>> RetornarProdutos()
         {
+            var resultado = new ResultadoOperacao<IList<Produto>>();
+
             var produtos = _repository.Listar();
 
             if (!produtos.Any())
-                return "Nenhum produto em leilão";
-
-            var mensagem = "";
-            foreach (var item in produtos.Where(p => p.Finalizado == false).ToList())
-                mensagem += $"{item.Status()}" + Environment.NewLine;
-
-            return mensagem;
-
+            {
+                resultado.CriarErro("Nenhum produto encontrado");
+            }
+            else
+            {
+                resultado.CriarSucesso(content: produtos);
+            }
+            return resultado;
         }
 
-        public string Cadastro(string request)
+        public ResultadoOperacao<Produto> Cadastro(string request)
         {
-            var produto = RetornaProdutoCadastro(request);
-            _repository.Adicionar(produto);
-            return @$"${produto.Id}$";
+            var resultado = new ResultadoOperacao<Produto>();
+            try
+            {
+                var produto = RetornaProdutoCadastro(request);
+                _repository.Adicionar(produto);
+                resultado.CriarSucesso(produto);
+                return resultado;
+            }
+            catch(Exception ex)
+            {
+                resultado.CriarErro(ex.Message);
+                return resultado;
+            }
         }
 
-        public string ConsultaArrematados(string request)
+        public ResultadoOperacao<IList<Produto>> ConsultaArrematados(string request)
         {
-            var emailComprador = Processar(request, Delimitadores.EmailComprador);
+            var resultado = new ResultadoOperacao<IList<Produto>>();
+            try
+            {
+                var emailComprador = Processar(request, Delimitadores.Email);
 
-            var produtos = _repository.ListarFinalizados();
+                var produtos = _repository.ListarFinalizados();
 
-            produtos = produtos.Where(x => x.EmailClienteMelhorLance.Equals(emailComprador)).ToList();
+                produtos = produtos.Where(x => x.EmailClienteMelhorLance.Equals(emailComprador)).ToList();
 
-            var mensagem = "";
-            if (!produtos.Any())
-                mensagem = "Você não arrematou nenhum leilão";
-
-            foreach(var produto in produtos)
-                mensagem += $"{produto.Status()}";
-
-            return mensagem;
+                if (!produtos.Any())
+                {
+                    resultado.CriarErro("Você não arrematou nenhum produto");
+                }
+                else
+                {
+                    resultado.CriarSucesso(produtos);
+                }
+                return resultado;
+            }
+            catch(Exception ex)
+            {
+                resultado.CriarErro(ex.Message);
+                return resultado;
+            }
         }
-        public string FinalizarLeilao(string request)
+        public ResultadoOperacao<Produto> FinalizarLeilao(string request)
         {
-            var idProduto = ProcessarIdProduto(request);
+            var resultado = new ResultadoOperacao<Produto>();
 
-            var emailVendedor = Processar(request, Delimitadores.EmailVendedor);
+            try
+            {
+                var idProduto = ProcessarIdProduto(request);
 
-            var produto = _repository.Buscar(idProduto);
-            if (produto is null)
-                return @"produto não existe";
+                var emailVendedor = Processar(request, Delimitadores.Email);
 
-            if (produto.EmailVendedor == emailVendedor)
-                return produto.FinalizarLeilao();
+                var produto = _repository.Buscar(idProduto);
+                if (produto is null)
+                {
+                    resultado.CriarErro("Produto não existe");
+                    return resultado;
+                }
 
-            return "Você não tem autorização para encerrar esse leilão";
+                if(!produto.EmailVendedor.Equals(emailVendedor, StringComparison.CurrentCultureIgnoreCase))
+                {
+                    resultado.CriarErro("Você não tem autorização para encerrar esse leilão");
+                }
+                else
+                {
+                    produto.FinalizarLeilao();
+                    resultado.CriarSucesso(produto);
+                }
+                return resultado;
+            }
+            catch(Exception ex)
+            {
+                resultado.CriarErro(ex.Message);
+                return resultado;
+            }
         }
 
 
         private static Produto RetornaProdutoCadastro(string request)
         {
             var produtoNome = Processar(request, Delimitadores.Nome);
-            var emailVendedor = Processar(request, Delimitadores.EmailVendedor);
+            var emailVendedor = Processar(request, Delimitadores.Email);
             var valor = Processar(request, Delimitadores.ValorLance);
             
             return new Produto(produtoNome, emailVendedor, Convert.ToDecimal(valor));
@@ -103,7 +151,7 @@ namespace A3.Gestao.Servidor.Services
         }
         private static decimal ProcessarValorLance(string request)
         {
-            if (!decimal.TryParse(Processar(request, Delimitadores.Decimal), out decimal valorLance))
+            if (!decimal.TryParse(Processar(request, Delimitadores.ValorLance), out decimal valorLance))
                 throw new Exception("Não foi possível converter o valor do lance em um decimal válido");
 
             return valorLance;

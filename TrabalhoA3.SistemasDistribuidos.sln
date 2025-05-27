@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Refatorando", "Refatorando"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A3.Gestao.Servidor", "A3.Gestao.Servidor\A3.Gestao.Servidor.csproj", "{006AD539-8AAB-4530-A5E4-D7F1C243B889}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Servidor.TestesUnitarios", "Servidor.TestesUnitarios\Servidor.TestesUnitarios.csproj", "{82926695-1ADD-4B57-BB94-CAF6E935EE46}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,12 +37,17 @@ Global
 		{006AD539-8AAB-4530-A5E4-D7F1C243B889}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{006AD539-8AAB-4530-A5E4-D7F1C243B889}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{006AD539-8AAB-4530-A5E4-D7F1C243B889}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82926695-1ADD-4B57-BB94-CAF6E935EE46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82926695-1ADD-4B57-BB94-CAF6E935EE46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82926695-1ADD-4B57-BB94-CAF6E935EE46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82926695-1ADD-4B57-BB94-CAF6E935EE46}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{006AD539-8AAB-4530-A5E4-D7F1C243B889} = {90E06788-E8A2-4A0B-922F-F5A662BAD889}
+		{82926695-1ADD-4B57-BB94-CAF6E935EE46} = {90E06788-E8A2-4A0B-922F-F5A662BAD889}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7C351D01-CDBC-40B3-AC63-BA9AB20E47B7}

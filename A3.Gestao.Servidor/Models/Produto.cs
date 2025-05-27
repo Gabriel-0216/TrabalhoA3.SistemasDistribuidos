@@ -42,6 +42,9 @@
             if (valor <= MelhorLance)
                 throw new Exception("O valor do lance deve ser superior ao lance atual");
 
+            if (string.IsNullOrEmpty(emailComprador))
+                throw new Exception("É obrigatório informar o email do comprador");
+
             MelhorLance = valor;
             EmailClienteMelhorLance = emailComprador;
         }

@@ -1,20 +1,21 @@
 ﻿namespace A3.Gestao.Servidor.Models
 {
-    public class ResultadoOperacao
+    public class ResultadoOperacao<T>
     {
-        public bool FoiSucesso { get; } 
-        public string Mensagem { get; }
-        public object? Dados { get; }
-
-        private ResultadoOperacao(bool foiSucesso, string mensagem, object? dados = null)
+        public bool FoiSucesso { get; private set; } 
+        public string? Mensagem { get; private set; }
+        public T Content { get; private set; }
+        public void CriarSucesso(T content, string mensagem = "Operação concluída")
         {
-            FoiSucesso = foiSucesso;
             Mensagem = mensagem;
-            Dados = dados;
+            FoiSucesso = true;
+            Content = content;
         }
 
-        public static ResultadoOperacao CriarSucesso(string mensagem = "LANCE_ACEITO", object? dados = null) => new (true, mensagem, dados);
-
-        public static ResultadoOperacao CriarErro(string mensagemErro) => new (false, mensagemErro);
+        public void CriarErro(string mensagemErro)
+        {
+            Mensagem = mensagemErro;
+            FoiSucesso = false;
+        }
     }
 }

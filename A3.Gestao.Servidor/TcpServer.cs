@@ -1,4 +1,5 @@
-﻿using A3.Gestao.Servidor.Models.Constantes;
+﻿using A3.Gestao.Servidor.Models;
+using A3.Gestao.Servidor.Models.Constantes;
 using A3.Gestao.Servidor.Services;
 using System.Net;
 using System.Net.Sockets;
@@ -62,23 +63,23 @@ namespace A3.Gestao.Servidor
             {
                 if (request == Comandos.LISTAR_PRODUTOS)
                 {
-                    return _leilaoService.RetornarProdutos();
+                    return ProcessResponse(_leilaoService.RetornarProdutos());
                 }
                 else if (request.Contains(Comandos.DAR_LANCE))
                 {
-                    return _leilaoService.DarLance(request).Mensagem;
+                    return ProcessResponse(_leilaoService.DarLance(request));
                 }
                 else if (request.Contains(Comandos.INICIAR_LEILAO))
                 {
-                    return _leilaoService.Cadastro(request);
+                    return ProcessResponse(_leilaoService.Cadastro(request));
                 }
                 else if (request.Contains(Comandos.FINALIZAR_LEILAO))
                 {
-                    return _leilaoService.FinalizarLeilao(request);
+                    return ProcessResponse(_leilaoService.FinalizarLeilao(request));
                 }
                 else if (request.Contains(Comandos.CONSULTAR_ARREMATADOS))
                 {
-                    return _leilaoService.ConsultaArrematados(request);
+                    return ProcessResponse(_leilaoService.ConsultaArrematados(request));
                 }
 
                 return "COMANDO_NÃO_RECONHECIDO";
@@ -94,6 +95,7 @@ namespace A3.Gestao.Servidor
             }
         }
 
+        private string ProcessResponse<T>(ResultadoOperacao<T> resultado) => resultado.FoiSucesso ? "Sucesso" : "Falha";
         public void Stop()
         {
             _isRunning = false;
