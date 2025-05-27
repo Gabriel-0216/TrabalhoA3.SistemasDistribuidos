@@ -58,9 +58,20 @@ namespace Servidor.TestesUnitarios
         {
             var idCadastro = CadastraProdutoValido();
 
-            var resp = _svc.FinalizarLeilao(lanceReq);
+            var finaliza = MontaRequestFinalizar(idCadastro, "produto@produto");
+            var resp = _svc.FinalizarLeilao(finaliza);
             Assert.True(resp.FoiSucesso);
+        }
+        [Fact]
+        public void FinalizaLeilaoLance()
+        {
+            var idCadastro = CadastraProdutoValido();
 
+            var lanceReq = MontaRequestLance(idCadastro, 15, "1bcd@abc");
+            _svc.DarLance(lanceReq);
+            var finaliza = MontaRequestFinalizar(idCadastro, "produto@produto");
+            var resp = _svc.FinalizarLeilao(finaliza);
+            Assert.True(resp.FoiSucesso);
         }
 
 

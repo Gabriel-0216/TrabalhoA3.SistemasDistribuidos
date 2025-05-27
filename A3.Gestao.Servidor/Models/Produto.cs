@@ -48,6 +48,5 @@
             MelhorLance = valor;
             EmailClienteMelhorLance = emailComprador;
         }
-        public string Status() => @$"Id: {Id}, Nome do produto: {Nome}, Melhor lance: {MelhorLance}, Em aberto?: {(Finalizado ? "Não" : "Sim")}";
     }
 }
